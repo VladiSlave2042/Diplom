@@ -17,6 +17,7 @@ resource "yandex_vpc_network" "network-1" {
   name = "network1"
 }
 
+<<<<<<< HEAD
 resource "yandex_vpc_subnet" "public" {
   name           = "public"
   zone           = "ru-central1-a"
@@ -27,15 +28,35 @@ resource "yandex_vpc_subnet" "public" {
 resource "yandex_vpc_subnet" "private-a" {
   name           = "private-a"
   zone           = "ru-central1-a"
+=======
+resource "yandex_vpc_subnet" "public-a" {
+  name           = "public-a"
+  zone           = "ru-central1-a"
+  network_id     = yandex_vpc_network.network-1.id
+  v4_cidr_blocks = ["192.168.3.0/24"]
+}
+
+resource "yandex_vpc_subnet" "public-b" {
+  name           = "public-b"
+  zone           = "ru-central1-b"
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   network_id     = yandex_vpc_network.network-1.id
   v4_cidr_blocks = ["192.168.2.0/24"]
 }
 
+<<<<<<< HEAD
 resource "yandex_vpc_subnet" "private-b" {
   name           = "private-b"
   zone           = "ru-central1-b"
   network_id     = yandex_vpc_network.network-1.id
   v4_cidr_blocks = ["192.168.3.0/24"]
+=======
+resource "yandex_vpc_subnet" "private" {
+  name           = "private"
+  zone           = "ru-central1-a"
+  network_id     = yandex_vpc_network.network-1.id
+  v4_cidr_blocks = ["192.168.1.0/24"]
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
 }
 
 resource "yandex_compute_instance" "vm-1" {
@@ -52,8 +73,14 @@ resource "yandex_compute_instance" "vm-1" {
     }
   }
   network_interface {
+<<<<<<< HEAD
     subnet_id = yandex_vpc_subnet.private-a.id
     ip_address = "192.168.2.3"
+=======
+    subnet_id = yandex_vpc_subnet.public-a.id
+    ip_address = "192.168.3.4"
+    nat = true
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   }
   metadata = {
     ssh-keys = "debian:${file("~/keys.from.vm/BM1.pub")}"
@@ -74,14 +101,21 @@ resource "yandex_compute_instance" "vm-2" {
     }
   }
   network_interface {
+<<<<<<< HEAD
     subnet_id = yandex_vpc_subnet.private-b.id
     ip_address = "192.168.3.3"
+=======
+    subnet_id = yandex_vpc_subnet.public-b.id
+    ip_address = "192.168.2.4"
+    nat = true
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   }
   metadata = {
     ssh-keys = "debian:${file("~/keys.from.vm/BM2.pub")}"
   }
 }
 
+<<<<<<< HEAD
 resource "yandex_compute_instance" "vm-4" {
   name        = "elastic"
   zone        = "ru-central1-a"
@@ -104,6 +138,8 @@ resource "yandex_compute_instance" "vm-4" {
   }
 }
 
+=======
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
 resource "yandex_compute_instance" "vm-3" {
   name        = "zabbix-server"
   zone        = "ru-central1-a"
@@ -118,15 +154,45 @@ resource "yandex_compute_instance" "vm-3" {
     }
   }
   network_interface {
+<<<<<<< HEAD
     subnet_id = yandex_vpc_subnet.public.id
     ip_address = "192.168.1.3"
     nat = true
+=======
+    subnet_id = yandex_vpc_subnet.private.id
+    ip_address = "192.168.1.4"
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   }
  metadata = {
     ssh-keys = "debian:${file("~/keys.from.vm/BM3.pub")}"
   }
 }
 
+<<<<<<< HEAD
+=======
+resource "yandex_compute_instance" "vm-4" {
+  name        = "elastic"
+  zone        = "ru-central1-a"
+  resources {
+    cores  = 4
+    memory = 8
+  }
+  boot_disk {
+    initialize_params {
+      image_id = "fd8vtq76jue50g6b6tm7"
+      size = 40
+    }
+  }
+  network_interface {
+    subnet_id = yandex_vpc_subnet.public-a.id
+    ip_address = "192.168.3.5"
+  }
+  metadata = {
+    ssh-keys = "debian:${file("~/keys.from.vm/BM4.pub")}"
+  }
+}
+
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
 resource "yandex_compute_instance" "vm-5" {
   name        = "kibana"
   zone        = "ru-central1-a"
@@ -141,9 +207,14 @@ resource "yandex_compute_instance" "vm-5" {
     }
   }
   network_interface {
+<<<<<<< HEAD
     subnet_id = yandex_vpc_subnet.public.id
     ip_address = "192.168.1.4"
     nat = true
+=======
+    subnet_id = yandex_vpc_subnet.private.id
+    ip_address = "192.168.1.5"
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   }
   metadata = {
     ssh-keys = "debian:${file("~/keys.from.vm/BM5.pub")}"
@@ -164,9 +235,14 @@ resource "yandex_compute_instance" "vm-6" {
     }
   }
   network_interface {
+<<<<<<< HEAD
     subnet_id = yandex_vpc_subnet.public.id
     ip_address = "192.168.1.5"
     nat = true
+=======
+    subnet_id = yandex_vpc_subnet.public-a.id
+    ip_address = "192.168.3.6"
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   }
   metadata = {
     ssh-keys = "debian:${file("~/keys.from.vm/BM6.pub")}"
@@ -176,12 +252,21 @@ resource "yandex_compute_instance" "vm-6" {
 resource "yandex_alb_target_group" "foo" {
   name           = "siet-target-group"
   target {
+<<<<<<< HEAD
     subnet_id    = yandex_vpc_subnet.private-a.id
     ip_address   = "192.168.2.3"
   }
   target {
     subnet_id    = yandex_vpc_subnet.private-b.id
     ip_address   = "192.168.3.3"
+=======
+    subnet_id    = yandex_vpc_subnet.public-a.id
+    ip_address   = "192.168.3.4"
+  }
+  target {
+    subnet_id    = yandex_vpc_subnet.public-b.id
+    ip_address   = "192.168.2.4"
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
   }
 }
 
@@ -231,11 +316,19 @@ resource "yandex_alb_load_balancer" "my-balancer" {
   allocation_policy {
     location {
       zone_id   = "ru-central1-a"
+<<<<<<< HEAD
       subnet_id = yandex_vpc_subnet.private-a.id 
     }
     location {
       zone_id   = "ru-central1-b"
       subnet_id = yandex_vpc_subnet.private-b.id
+=======
+      subnet_id = yandex_vpc_subnet.public-a.id 
+    }
+    location {
+      zone_id   = "ru-central1-b"
+      subnet_id = yandex_vpc_subnet.public-b.id
+>>>>>>> 03e1ce88717e42bd0cf9021beeb3b7c51eaa4fdd
     }
   }
   listener {

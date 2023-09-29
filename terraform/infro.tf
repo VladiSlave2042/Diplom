@@ -36,22 +36,6 @@ resource "yandex_vpc_subnet" "private-c" {
 }
 #####################################################################
 #Группы безопасности
-resource "yandex_vpc_security_group" "secure-site-sg" {
-  name        = "secure-site-sg"
-  network_id  = "${yandex_vpc_network.network-1.id}"
-  ingress {
-    protocol       = "TCP"
-    description    = "nginx"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 80
-  }
-  ingress {
-    protocol       = "TCP"
-    description    = "nginx"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 443
-  }
-}
 resource "yandex_vpc_security_group" "bastion-sg" {
   name        = "bastion-sg"
   network_id  = "${yandex_vpc_network.network-1.id}"
@@ -66,6 +50,101 @@ resource "yandex_vpc_security_group" "bastion-sg" {
     description    = "ssh-out"
     v4_cidr_blocks = ["0.0.0.0/0"]
     port           = 22
+  }
+}
+##
+resource "yandex_vpc_security_group" "nginx-sg" {
+  name        = "nginx-sg"
+  network_id  = "${yandex_vpc_network.network-1.id}"
+  ingress {
+    protocol       = "TCP"
+    description    = "nginx-in"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 80
+  }
+  ingress {
+    protocol       = "TCP"
+    description    = "nginx-in"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 443
+  }
+  ingress {
+    protocol       = "TCP"
+    description    = "ssh-bastion-in"
+    port           = 22
+    security_group_id = yandex_vpc_security_group.bastion-sg.id
+  }
+  egress {
+    protocol       = "ANY"
+    description    = "out"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+##
+resource "yandex_vpc_security_group" "zabbix-sg" {
+  name        = "zabbix-sg"
+  network_id  = "${yandex_vpc_network.network-1.id}"
+  ingress {
+    protocol       = "TCP"
+    description    = "zabbix-in"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    from_port      = 10050
+    to_port        = 10051
+  }
+  ingress {
+    protocol       = "TCP"
+    description    = "ssh-bastion-in"
+    port           = 22
+    security_group_id = yandex_vpc_security_group.bastion-sg.id
+  }
+  egress {
+    protocol       = "ANY"
+    description    = "out"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+##
+resource "yandex_vpc_security_group" "kibana-sg" {
+  name        = "kibana-sg"
+  network_id  = "${yandex_vpc_network.network-1.id}"
+  ingress {
+    protocol       = "TCP"
+    description    = "kibana-in"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 5601
+  }
+  ingress {
+    protocol       = "TCP"
+    description    = "ssh-bastion-in"
+    port           = 22
+    security_group_id = yandex_vpc_security_group.bastion-sg.id
+  }
+  egress {
+    protocol       = "ANY"
+    description    = "out"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+##
+resource "yandex_vpc_security_group" "elastic-sg" {
+  name        = "elastic-sg"
+  network_id  = "${yandex_vpc_network.network-1.id}"
+  ingress {
+    protocol       = "TCP"
+    description    = "elastic-in"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 9200
+  }
+  ingress {
+    protocol       = "TCP"
+    description    = "ssh-bastion-in"
+    port           = 22
+    security_group_id = yandex_vpc_security_group.bastion-sg.id
+  }
+  egress {
+    protocol       = "ANY"
+    description    = "out"
+    v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 #####################################################################
@@ -85,6 +164,7 @@ resource "yandex_compute_instance" "vm-1" {
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.private-a.id
+    security_group_ids = [yandex_vpc_security_group.nginx-sg.id, yandex_vpc_security_group.zabbix-sg.id]
     ip_address = "192.168.20.4"
   }
   metadata = {
@@ -107,6 +187,7 @@ resource "yandex_compute_instance" "vm-2" {
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.private-c.id
+    security_group_ids = [yandex_vpc_security_group.nginx-sg.id, yandex_vpc_security_group.zabbix-sg.id]
     ip_address = "192.168.30.4"
   }
   metadata = {
@@ -129,6 +210,7 @@ resource "yandex_compute_instance" "vm-4" {
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.private-a.id
+    security_group_ids = [yandex_vpc_security_group.elastic-sg.id]
     ip_address = "192.168.20.5"
   }
   metadata = {
@@ -151,6 +233,7 @@ resource "yandex_compute_instance" "vm-3" {
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.public.id
+    security_group_ids = [yandex_vpc_security_group.zabbix-sg.id]
     ip_address = "192.168.1.3"
     nat = true
   }
@@ -174,6 +257,7 @@ resource "yandex_compute_instance" "vm-5" {
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.public.id
+    security_group_ids = [yandex_vpc_security_group.kibana-sg.id]
     ip_address = "192.168.1.4"
     nat = true
   }

@@ -46,10 +46,9 @@ resource "yandex_vpc_security_group" "bastion-sg" {
     port           = 22
   }
   egress {
-    protocol       = "TCP"
-    description    = "ssh-out"
+    protocol       = "ANY"
+    description    = "out"
     v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 22
   }
 }
 ##

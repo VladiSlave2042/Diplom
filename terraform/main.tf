@@ -63,12 +63,6 @@ resource "yandex_vpc_security_group" "nginx-sg" {
   }
   ingress {
     protocol       = "TCP"
-    description    = "nginx-in"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-    port           = 443
-  }
-  ingress {
-    protocol       = "TCP"
     description    = "ssh-bastion-in"
     port           = 22
     security_group_id = yandex_vpc_security_group.bastion-sg.id
@@ -83,6 +77,12 @@ resource "yandex_vpc_security_group" "nginx-sg" {
 resource "yandex_vpc_security_group" "zabbix-sg" {
   name        = "zabbix-sg"
   network_id  = "${yandex_vpc_network.network-1.id}"
+  ingress {
+    protocol       = "TCP"
+    description    = "zabbix-in"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port      = 80
+  }
   ingress {
     protocol       = "TCP"
     description    = "zabbix-in"
@@ -153,18 +153,19 @@ resource "yandex_compute_instance" "vm-1" {
   zone        = "ru-central1-a"
   resources {
     cores  = 2
-    memory = 4
+    memory = 2
   }
   boot_disk {
     initialize_params {
       image_id = "fd830gae25ve4glajdsj"
-      size = 30
+      size = 15
     }
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.private-a.id
     security_group_ids = [yandex_vpc_security_group.nginx-sg.id, yandex_vpc_security_group.zabbix-sg.id]
     ip_address = "192.168.20.4"
+    nat = true
   }
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
@@ -176,18 +177,19 @@ resource "yandex_compute_instance" "vm-2" {
   zone        = "ru-central1-c"
   resources {
     cores  = 2
-    memory = 4
+    memory = 2
   }
   boot_disk {
     initialize_params {
       image_id = "fd830gae25ve4glajdsj"
-      size = 30
+      size = 15
     }
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.private-c.id
     security_group_ids = [yandex_vpc_security_group.nginx-sg.id, yandex_vpc_security_group.zabbix-sg.id]
     ip_address = "192.168.30.4"
+    nat = true
   }
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
@@ -204,7 +206,7 @@ resource "yandex_compute_instance" "vm-4" {
   boot_disk {
     initialize_params {
       image_id = "fd830gae25ve4glajdsj"
-      size = 40
+      size = 30
     }
   }
   network_interface {
@@ -227,12 +229,12 @@ resource "yandex_compute_instance" "vm-3" {
   boot_disk {
     initialize_params {
       image_id = "fd830gae25ve4glajdsj"
-      size = 40
+      size = 30
     }
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.public.id
-    security_group_ids = [yandex_vpc_security_group.zabbix-sg.id]
+    #security_group_ids = [yandex_vpc_security_group.zabbix-sg.id]
     ip_address = "192.168.1.3"
     nat = true
   }
@@ -251,7 +253,7 @@ resource "yandex_compute_instance" "vm-5" {
   boot_disk {
     initialize_params {
       image_id = "fd830gae25ve4glajdsj"
-      size = 40
+      size = 30
     }
   }
   network_interface {

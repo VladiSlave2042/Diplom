@@ -3,7 +3,7 @@
 resource "yandex_vpc_network" "network" {
   name = "network"
 }
-#Подсети
+#Подсети, разбил на 4 штуки по одной приватной для каждой ВМ web сайта и по одной приватной и публичной для соответствующих сервисов, отдельную подсеть для бастиона не делал, излишне наверное.
 resource "yandex_vpc_subnet" "public-serviese" {
   name           = "public-serviese"
   zone           = "ru-central1-a"
@@ -21,14 +21,14 @@ resource "yandex_vpc_subnet" "private-1" {
   name           = "web-1"
   zone           = "ru-central1-a"
   network_id     = yandex_vpc_network.network.id
-  v4_cidr_blocks = ["192.168.30.0/24"]
+  v4_cidr_blocks = ["192.168.4.0/24"]
   route_table_id = yandex_vpc_route_table.rt.id
 }
 resource "yandex_vpc_subnet" "private-2" {
   name           = "web-2"
   zone           = "ru-central1-c"
   network_id     = yandex_vpc_network.network.id
-  v4_cidr_blocks = ["192.168.40.0/24"]
+  v4_cidr_blocks = ["192.168.8.0/24"]
   route_table_id = yandex_vpc_route_table.rt.id
 }
 ##Шлюз для выхода в сеть
@@ -50,11 +50,11 @@ resource "yandex_alb_target_group" "foo" {
   name           = "siet-target-group"
   target {
     subnet_id    = yandex_vpc_subnet.private-1.id
-    ip_address   = "192.168.30.10"
+    ip_address   = "192.168.4.10"
   }
   target {
     subnet_id    = yandex_vpc_subnet.private-2.id
-    ip_address   = "192.168.40.10"
+    ip_address   = "192.168.8.10"
   }
 }
 ##
@@ -106,7 +106,7 @@ resource "yandex_alb_load_balancer" "my-balancer" {
     location {
       zone_id   = "ru-central1-a"
       subnet_id = yandex_vpc_subnet.private-1.id 
-    }
+    }#Вот тут с зонами доступности тоже непоняточка небольшая, вообще как я понял, то баланисровщик должен базироваться во всех зонах где есть соответствующие машины для балансировки трафика между ними. Хотя может это просто зона локализации.
     location {
       zone_id   = "ru-central1-c"
       subnet_id = yandex_vpc_subnet.private-2.id 
@@ -131,7 +131,7 @@ resource "yandex_alb_load_balancer" "my-balancer" {
 #####################################################################
 #Группы безопасности
 resource "yandex_vpc_security_group" "private-sg" {
-  name       = "private-sg"
+  name       = "private-sg"  #Решил сделать единое правило для пропуска трафика во внутренней сети, что бы не прописывать порты у отдельных правил.
   network_id = yandex_vpc_network.network.id
   ingress {
     protocol          = "TCP"
@@ -140,8 +140,17 @@ resource "yandex_vpc_security_group" "private-sg" {
     to_port           = 65535
   }
   ingress {
+    protocol          = "TCP"
+    security_group_id = yandex_vpc_security_group.load-balancer-sg.id
+    port              = 80
+  }
+  ingress {
     protocol       = "ANY"
-    v4_cidr_blocks = ["192.168.10.0/24", "192.168.20.0/24", "192.168.30.0/24", "192.168.40.0/24"]
+    v4_cidr_blocks = ["192.168.10.0/24", "192.168.20.0/24", "192.168.4.0/24", "192.168.8.0/24"]
+  }
+  ingress {
+    protocol       = "ICMP"
+    v4_cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     protocol       = "ANY"
@@ -150,7 +159,7 @@ resource "yandex_vpc_security_group" "private-sg" {
 }
 ##
 resource "yandex_vpc_security_group" "load-balancer-sg" {
-  name       = "load-balancer-sg"
+  name       = "load-balancer-sg"  #Не совсем уверен что это нужно, т.к. хелсчек описывается для немного другого ресурса, но поскольку в бекенд группе есть подобная задача, то оставил.
   network_id = yandex_vpc_network.network.id
   ingress {
     protocol          = "ANY"
@@ -231,12 +240,12 @@ resource "yandex_vpc_security_group" "elastic-sg" {
   network_id  = yandex_vpc_network.network.id
   ingress {
     protocol          = "TCP"
-    security_group_id = yandex_vpc_security_group.kibana-sg.id
+    v4_cidr_blocks    = ["192.168.10.0/24"]
     port              = 9200
   }
   ingress {
     protocol          = "TCP"
-    security_group_id = yandex_vpc_security_group.private-sg.id
+    v4_cidr_blocks    = ["192.168.4.0/24", "192.168.8.0/24"]
     port              = 9200
   }
   ingress {

@@ -1,0 +1,69 @@
+---
+# tasks file for config-zabbix-server
+- name: "get-app"
+  ansible.builtin.apt:
+    name:
+      - apache2
+      - postgresql
+      - python3-psycopg2
+      - acl
+      - zabbix-server-pgsql
+      - zabbix-frontend-php
+      - php8.1-pgsql
+      - zabbix-apache-conf
+      - zabbix-sql-scripts
+    state: latest
+    update_cache: yes
+  become: true
+- name: "start postgresql"
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: yes
+#- name: "create-tmp-folder"
+# ansible.builtin.file:
+#    path: /var/lib/postgresql/.ansible/tmp
+#    state: directory
+#    mode: '0744'
+- name: "create user zabbix"
+  community.postgresql.postgresql_user:
+    name: zabbix
+    password: 11
+  become: true
+  become_user: postgres
+# ansible.builtin.shell:
+#   cmd: su - postgres -c 'psql --command "CREATE USER zabbix WITH PASSWORD '\'11\'';"'
+- name: "create database"
+  community.postgresql.postgresql_db:
+    name: zabbix
+    owner: zabbix
+  become: true
+  become_user: postgres
+# ansible.builtin.shell:
+#   cmd: su - postgres -c 'psql --command "CREATE DATABASE zabbix OWNER zabbix;"'
+- name: "import script"
+  ansible.builtin.shell:
+    cmd: zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psql zabbix
+  become: true
+- name: "set password"
+  ansible.builtin.lineinfile:
+    path: /etc/zabbix/zabbix_server.conf
+    insertafter: "# DBPassword="
+    line: DBPassword=123456789
+  notify:
+    - restart zabbix-server
+    - restart apache2
+  become: true
+#- name: "restart apach"
+#  ansible.builtin.service:
+#   name: apache2 
+#    state: restarted
+#    enabled: yes
+#  become: true
+#- name: "restart zabbix-server"
+#  ansible.builtin.service:
+#    name: zabbix-server 
+#    state: restarted
+#   enabled: yes
+#  become: true
+        

@@ -1,0 +1,20 @@
+---
+# tasks file for install-elastic
+- name: "push-elastic"
+  ansible.builtin.copy:
+    src: ./file/packej/elasticsearch-7.14.1-amd64.deb
+    dest: /home/ubuntu/
+- name: "install-app"
+  ansible.builtin.apt:
+    deb: /home/ubuntu/elasticsearch-7.14.1-amd64.deb #Можно мыло бы обойтись и этим модулем но зерколо яндекса нестабильно, иногда эластик пропадает
+- name: "push-cfg"
+  ansible.builtin.copy:
+    src: ./file/cfg.file/elasticsearch.yml
+    dest: /etc/elasticsearch/
+    owner: root
+    group: elasticsearch
+    mode: "0660"
+    force: true
+  notify: 
+    - daemon-reload
+    - restart-elasticsearch

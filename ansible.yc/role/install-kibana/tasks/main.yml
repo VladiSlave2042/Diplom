@@ -1,0 +1,23 @@
+---
+# tasks file for install-kibana
+- name: "push-kibana"
+  ansible.builtin.copy:
+    src: ./file/packej/kibana-7.14.1-amd64.deb
+    dest: /home/ubuntu/
+- name: "install-kibana"
+  ansible.builtin.apt:
+    deb: /home/ubuntu/kibana-7.14.1-amd64.deb #Можно мыло бы обойтись и этим модулем но зерколо яндекса нестабильно, иногда эластик пропадает
+- name: "daemon-reload"
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: kibana.service
+    state: started
+- name: "push-cfg"
+  ansible.builtin.copy:
+    src: ./file/cfg.file/kibana.yml
+    dest: /etc/kibana/
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart-kibana

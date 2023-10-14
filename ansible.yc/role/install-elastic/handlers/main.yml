@@ -1,0 +1,13 @@
+---
+# handlers file for install-elastic
+- name: "daemon-reload"
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: elasticsearch.service
+    state: started
+
+- name: "restart-elasticsearch"
+  ansible.builtin.service:
+    name: elasticsearch
+    state: restarted
+    enabled: true

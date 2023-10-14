@@ -1,0 +1,7 @@
+---
+# handlers file for prepearing_server
+- name: "restart zabbix-agent"
+  ansible.builtin.service:
+    name: zabbix-agent
+    state: restarted
+    enabled: yes

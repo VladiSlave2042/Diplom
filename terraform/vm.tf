@@ -16,10 +16,13 @@ resource "yandex_compute_instance" "vm-1" {
   network_interface {
     subnet_id = yandex_vpc_subnet.private-1.id
     security_group_ids = [yandex_vpc_security_group.private-sg.id]
-    ip_address = "192.168.30.10"
+    ip_address = "192.168.4.10"
   }
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
+  }
+  scheduling_policy {
+    preemptible = true
   }
 }
 ##
@@ -39,10 +42,13 @@ resource "yandex_compute_instance" "vm-2" {
   network_interface {
     subnet_id = yandex_vpc_subnet.private-2.id
     security_group_ids = [yandex_vpc_security_group.private-sg.id]
-    ip_address = "192.168.40.10"
+    ip_address = "192.168.8.10"
   }
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
+  }
+  scheduling_policy {
+    preemptible = true
   }
 }
 ##
@@ -68,6 +74,9 @@ resource "yandex_compute_instance" "vm-3" {
  metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
   }
+  scheduling_policy {
+    preemptible = true
+  }
 }
 ##
 resource "yandex_compute_instance" "vm-4" {
@@ -90,6 +99,9 @@ resource "yandex_compute_instance" "vm-4" {
   }
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
+  }
+  scheduling_policy {
+    preemptible = true
   }
 }
 ##
@@ -115,6 +127,9 @@ resource "yandex_compute_instance" "vm-5" {
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
   }
+  scheduling_policy {
+    preemptible = true
+  }
 }
 ##
 resource "yandex_compute_instance" "vm-6" {
@@ -132,11 +147,14 @@ resource "yandex_compute_instance" "vm-6" {
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.public-serviese.id
-    security_group_ids = [yandex_vpc_security_group.bastion-sg.id]
+    security_group_ids = [yandex_vpc_security_group.private-sg.id, yandex_vpc_security_group.bastion-sg.id]
     ip_address = "192.168.10.12"
     nat = true
   }
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
+  }
+  scheduling_policy {
+    preemptible = true
   }
 }

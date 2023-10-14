@@ -1,0 +1,57 @@
+---
+- name: "push-ssh-key-on-bastion"
+  hosts: bastion
+  become: true
+  gather_facts: False
+  tasks:
+    - name: "push"
+      ansible.builtin.copy:
+        src: ./file/id_ed25519
+        dest: /root/.ssh/
+        owner: root
+        group: root
+        mode: "0600"
+
+- name: "zabbix-repo-add"
+  hosts: webserver, zabbix-server
+  become: true
+  gather_facts: False
+  tasks:
+    - name: "install-zabbix-repo"
+      ansible.builtin.apt:
+        deb: https://repo.zabbix.com/zabbix/6.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.0-4+ubuntu22.04_all.deb
+
+- name: "prepearing-zabbix-server"
+  hosts: zabbix-server
+  gather_facts: False
+  roles:
+    - config-zabbix-server
+
+- name: "prepearing_server"
+  hosts: webserver
+  become: true
+  gather_facts: False
+  roles:
+    - prepearing_server
+
+- name: "get-elastic"
+  hosts: elastic-server
+  become: true
+  gather_facts: False
+  roles:
+    - install-elastic
+
+- name: "get-kibana"
+  hosts: kibana-server
+  become: true
+  gather_facts: False
+  roles:
+    - install-kibana
+  
+- name: "get-filebeat"
+  hosts: webserver
+  become: true
+  gather_facts: False
+  roles:
+    - filebeat.install
+    

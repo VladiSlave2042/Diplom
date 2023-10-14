@@ -1,0 +1,16 @@
+# template.test: filebeat.yml.j2
+filebeat.inputs:
+- type: filestream
+  id: my-filestream-id
+  enabled: true
+  paths:
+    - /var/log/nginx/access.log
+    - /var/log/nginx/error.log
+
+setup.dashboards.enabled: true
+
+setup.kibana:
+  host: "http://192.168.1.4:5601"
+
+output.elasticsearch:
+  hosts: ["192.168.20.5:9200"]

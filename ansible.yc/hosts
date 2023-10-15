@@ -5,8 +5,8 @@ elastic-server
 kibana-server
 
 [webserver]
-web-1 ansible_host=192.168.30.10
-web-2 ansible_host=192.168.40.10
+web-1 ansible_host=192.168.4.10
+web-2 ansible_host=192.168.8.10
 [zabbix-server]
 zabbix ansible_host=192.168.10.10
 [elastic-server]
@@ -15,8 +15,8 @@ elastic ansible_host=192.168.20.10
 kibana ansible_host=192.168.10.11
 
 [bastion]
-bastion ansible_host=158.160.125.239 ansible_ssh_user=ubuntu
+bastion ansible_host=158.160.36.78 ansible_ssh_user=ubuntu
 
 [nodes:vars]
-ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -i /root/.ssh/id_ed25519 -p22 ubuntu@158.160.125.239"'
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -q -i /root/.ssh/id_ed25519 -p22 ubuntu@158.160.36.78"'
 ansible_ssh_user=ubuntu

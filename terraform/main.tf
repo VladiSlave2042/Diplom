@@ -7,7 +7,7 @@ terraform {
   required_version = ">= 0.13"
 }
 provider "yandex" {
-  token = "удалил"
-  cloud_id = "удалил"
-  folder_id = "удалил"
+  token = "удалил для git"
+  cloud_id = "удалил для git"
+  folder_id = "удалил для git"
 }

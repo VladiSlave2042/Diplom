@@ -1,8 +1,8 @@
 ---
 - name: "push-ssh-key-on-bastion"
   hosts: bastion
-  become: true
   gather_facts: False
+  become: true
   tasks:
     - name: "push"
       ansible.builtin.copy:
@@ -14,8 +14,8 @@
 
 - name: "zabbix-repo-add"
   hosts: webserver, zabbix-server
-  become: true
   gather_facts: False
+  become: true
   tasks:
     - name: "install-zabbix-repo"
       ansible.builtin.apt:

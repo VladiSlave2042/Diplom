@@ -141,7 +141,7 @@ resource "yandex_vpc_security_group" "private-sg" {
   }
   ingress {
     protocol          = "TCP"
-    security_group_id = yandex_vpc_security_group.load-balancer-sg.id
+    security_group_id = yandex_vpc_security_group.load-balancer-sg.id #Данный параметр ведет себя странно, от раза к разу может не работать вовсе.
     port              = 80
   }
   ingress {
@@ -206,6 +206,11 @@ resource "yandex_vpc_security_group" "zabbix-sg" {
     protocol       = "TCP"
     v4_cidr_blocks = ["0.0.0.0/0"]
     port      = 80
+  }
+  ingress {
+    protocol       = "TCP"
+    v4_cidr_blocks = ["192.168.4.0/24", "192.168.8.0/24"]
+    port      = 10050
   }
   ingress {
     protocol       = "ICMP"

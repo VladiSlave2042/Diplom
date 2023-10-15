@@ -1,5 +1,5 @@
 #####################################################################
-#Виртуальные машины
+#Виртуальные машины, сделал прерываемыми для экономии
 resource "yandex_compute_instance" "vm-1" {
   name        = "web-a"
   zone        = "ru-central1-a"
@@ -157,4 +157,8 @@ resource "yandex_compute_instance" "vm-6" {
   scheduling_policy {
     preemptible = true
   }
+}
+##Выведем внешний адрес бастиона для удобства
+output "external_ip_address_vm_6" {
+  value = yandex_compute_instance.vm-6.network_interface.0.nat_ip_address
 }

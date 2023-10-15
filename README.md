@@ -37,6 +37,7 @@
 ![web-works](/img/web-works.png)
 ---
 ## Мониторинг
+---
 Все сконфигурированно ансиблом, нам остается только залогинится и настроить дашборды
 ![zabbix-web-server](/img/zabbix-webserver-complite.png)
 ---
